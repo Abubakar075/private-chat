@@ -4,219 +4,219 @@
     <title>Hideout - Private Chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f0f23;
-            color: #e0e0e0;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            background-image: radial-gradient(circle at 10% 20%, rgba(28, 58, 173, 0.1) 0%, transparent 20%);
-        }
-        #auth-screen, #chat-screen { display: none; }
-        .container { 
-            background: rgba(20, 20, 40, 0.9);
-            border-radius: 16px;
-            border: 1px solid rgba(100, 100, 255, 0.2);
-            padding: 30px;
-            margin-top: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 50, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        h1 { 
-            color: #6c8cff;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 0 0 15px rgba(108, 140, 255, 0.5);
-            letter-spacing: 1px;
-        }
-        h2 { 
-            color: #8da1ff;
-            margin-bottom: 20px;
-            border-bottom: 2px solid rgba(108, 140, 255, 0.3);
-            padding-bottom: 10px;
-        }
-        input, button {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        input {
-            background: rgba(40, 40, 60, 0.8);
-            border: 1px solid rgba(108, 140, 255, 0.3);
-            color: #e0e0e0;
-        }
-        input:focus {
-            outline: none;
-            border-color: #6c8cff;
-            box-shadow: 0 0 10px rgba(108, 140, 255, 0.3);
-        }
-        button {
-            background: linear-gradient(135deg, #6c8cff, #4a6fff);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        button:hover { 
-            background: linear-gradient(135deg, #5a7cff, #3a5fff);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 140, 255, 0.4);
-        }
-        #messages {
-            height: 450px;
-            overflow-y: auto;
-            border: 1px solid rgba(108, 140, 255, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            background: rgba(30, 30, 50, 0.5);
-            scrollbar-width: thin;
-            scrollbar-color: #6c8cff #1e1e32;
-        }
-        #messages::-webkit-scrollbar {
-            width: 8px;
-        }
-        #messages::-webkit-scrollbar-track {
-            background: #1e1e32;
-            border-radius: 4px;
-        }
-        #messages::-webkit-scrollbar-thumb {
-            background: #6c8cff;
-            border-radius: 4px;
-        }
-        .message {
-            margin-bottom: 20px;
-            padding: 15px 20px;
-            border-radius: 18px;
-            max-width: 85%;
-            word-wrap: break-word;
-            position: relative;
-            animation: fadeIn 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .my-message {
-            background: linear-gradient(135deg, #2d4b9e, #1a2f75);
-            margin-left: auto;
-            text-align: right;
-            border-bottom-right-radius: 5px;
-        }
-        .their-message {
-            background: linear-gradient(135deg, #2a2a4a, #1a1a35);
-            border-bottom-left-radius: 5px;
-            border: 1px solid rgba(108, 140, 255, 0.1);
-        }
-        .message-sender {
-            font-size: 13px;
-            color: #8da1ff;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .online-status {
-            text-align: center;
-            color: #4dff88;
-            margin-bottom: 15px;
-            font-weight: bold;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .online-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #4dff88;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        .timestamp {
-            font-size: 11px;
-            color: #8888cc;
-            margin-top: 8px;
-            opacity: 0.8;
-        }
-        .status-indicator {
-            font-size: 12px;
-            color: #4dff88;
-            text-align: right;
-            margin-top: 5px;
-            font-style: italic;
-        }
-        .typing-indicator {
-            color: #8888cc;
-            font-style: italic;
-            font-size: 14px;
-            padding: 10px;
-            display: none;
-        }
-        .emoji-btn {
-            background: rgba(108, 140, 255, 0.2);
-            border: none;
-            color: #8da1ff;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        .emoji-btn:hover {
-            background: rgba(108, 140, 255, 0.4);
-        }
-        .info-message {
-            text-align: center;
-            color: #8888cc;
-            font-style: italic;
-            margin: 15px 0;
-            font-size: 14px;
-        }
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(108, 140, 255, 0.2);
-        }
-        .message-input-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        #message-input {
-            flex: 1;
-        }
-        .logout-btn {
-            background: rgba(255, 80, 80, 0.2);
-            color: #ff8080;
-            width: auto;
-            padding: 10px 20px;
-        }
-        .logout-btn:hover {
-            background: rgba(255, 80, 80, 0.4);
-        }
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .container { padding: 20px; }
-            #messages { height: 350px; }
-            h1 { font-size: 2em; }
-        }
-    </style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #0f0f23;
+        color: #e0e0e0;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-image: radial-gradient(circle at 10% 20%, rgba(28, 58, 173, 0.1) 0%, transparent 20%);
+    }
+    #auth-screen, #chat-screen { display: none; }
+    .container { 
+        background: rgba(20, 20, 40, 0.9);
+        border-radius: 16px;
+        border: 1px solid rgba(100, 100, 255, 0.2);
+        padding: 30px;
+        margin-top: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 50, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    h1 { 
+        color: #6c8cff;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        text-shadow: 0 0 15px rgba(108, 140, 255, 0.5);
+        letter-spacing: 1px;
+    }
+    h2 { 
+        color: #8da1ff;
+        margin-bottom: 20px;
+        border-bottom: 2px solid rgba(108, 140, 255, 0.3);
+        padding-bottom: 10px;
+    }
+    input, button {
+        width: 100%;
+        padding: 14px;
+        margin: 10px 0;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+    /* FIXED INPUT FIELD - Now visible! */
+    input {
+        background: rgba(30, 30, 50, 0.9);
+        border: 1px solid rgba(108, 140, 255, 0.5);
+        color: #ffffff;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+    input:focus {
+        outline: none;
+        border-color: #6c8cff;
+        box-shadow: 0 0 15px rgba(108, 140, 255, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+    input::placeholder {
+        color: #8888cc;
+        opacity: 0.7;
+    }
+    button {
+        background: linear-gradient(135deg, #6c8cff, #4a6fff);
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+    button:hover { 
+        background: linear-gradient(135deg, #5a7cff, #3a5fff);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 140, 255, 0.4);
+    }
+    #messages {
+        height: 450px;
+        overflow-y: auto;
+        border: 1px solid rgba(108, 140, 255, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        background: rgba(30, 30, 50, 0.5);
+        scrollbar-width: thin;
+        scrollbar-color: #6c8cff #1e1e32;
+    }
+    #messages::-webkit-scrollbar {
+        width: 8px;
+    }
+    #messages::-webkit-scrollbar-track {
+        background: #1e1e32;
+        border-radius: 4px;
+    }
+    #messages::-webkit-scrollbar-thumb {
+        background: #6c8cff;
+        border-radius: 4px;
+    }
+    .message {
+        margin-bottom: 20px;
+        padding: 15px 20px;
+        border-radius: 18px;
+        max-width: 85%;
+        word-wrap: break-word;
+        position: relative;
+        animation: fadeIn 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        color: #ffffff;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .my-message {
+        background: linear-gradient(135deg, #2d4b9e, #1a2f75);
+        margin-left: auto;
+        text-align: right;
+        border-bottom-right-radius: 5px;
+    }
+    .their-message {
+        background: linear-gradient(135deg, #2a2a4a, #1a1a35);
+        border-bottom-left-radius: 5px;
+        border: 1px solid rgba(108, 140, 255, 0.1);
+    }
+    .message-sender {
+        font-size: 13px;
+        color: #8da1ff;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    .online-status {
+        text-align: center;
+        color: #4dff88;
+        margin-bottom: 15px;
+        font-weight: bold;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .online-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #4dff88;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    .timestamp {
+        font-size: 11px;
+        color: #8888cc;
+        margin-top: 8px;
+        opacity: 0.8;
+    }
+    .typing-indicator {
+        color: #4dff88;
+        font-style: italic;
+        font-size: 14px;
+        padding: 10px;
+        display: none;
+    }
+    .emoji-btn {
+        background: rgba(108, 140, 255, 0.2);
+        border: none;
+        color: #8da1ff;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+    .emoji-btn:hover {
+        background: rgba(108, 140, 255, 0.4);
+    }
+    .info-message {
+        text-align: center;
+        color: #8888cc;
+        font-style: italic;
+        margin: 15px 0;
+        font-size: 14px;
+    }
+    .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(108, 140, 255, 0.2);
+    }
+    .message-input-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    #message-input {
+        flex: 1;
+    }
+    .logout-btn {
+        background: rgba(255, 80, 80, 0.2);
+        color: #ff8080;
+        width: auto;
+        padding: 10px 20px;
+    }
+    .logout-btn:hover {
+        background: rgba(255, 80, 80, 0.4);
+    }
+    @media (max-width: 600px) {
+        body { padding: 10px; }
+        .container { padding: 20px; }
+        #messages { height: 350px; }
+        h1 { font-size: 2em; }
+    }
+</style>
 </head>
 <body>
     <h1>🕶️ HIDEOUT</h1>
