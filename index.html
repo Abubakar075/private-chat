@@ -1,353 +1,344 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Private Chat - You & Friend</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #f0f2f5;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        #auth-screen, #chat-screen { display: none; }
-        .container { 
-            background: white; 
-            border-radius: 10px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 30px;
-            margin-top: 20px;
-        }
-        h1 { 
-            color: #ff6b6b; 
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        h2 { 
-            color: #333; 
-            margin-bottom: 20px;
-        }
-        input, button {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover { background: #ff5252; }
-        #messages {
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            background: #fafafa;
-        }
-        .message {
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            border-radius: 18px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        .my-message {
-            background: #dcf8c6;
-            margin-left: auto;
-            text-align: right;
-        }
-        .their-message {
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
-        }
-        .message-sender {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 3px;
-        }
-        #online-count {
-            text-align: center;
-            color: #4CAF50;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        .timestamp {
-            font-size: 11px;
-            color: #999;
-            margin-top: 5px;
-        }
-        .info-message {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-            margin: 10px 0;
-        }
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .container { padding: 20px; }
-            #messages { height: 300px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Private Chat with Maryam</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root {
+    --bg: #e9eef3;
+    --card: #ffffff;
+    --header: #2f80ed;
+    --text: #000000;
+    --subtext: #666;
+    --mymsg: #d9ecff;
+    --theirmsg: #ffffff;
+    --border: #ddd;
+}
+
+body.dark {
+    --bg: #121212;
+    --card: #1e1e1e;
+    --header: #1f6feb;
+    --text: #ffffff;
+    --subtext: #aaa;
+    --mymsg: #2a4d7a;
+    --theirmsg: #2a2a2a;
+    --border: #333;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text);
+}
+
+/* CONTAINER */
+.container {
+    width: 100%;
+    max-width: 420px;
+    height: 90vh;
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: none;
+    overflow: hidden;
+}
+
+/* HEADER */
+header {
+    background: var(--header);
+    color: white;
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+header button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* AUTH */
+#auth-screen {
+    padding: 30px;
+}
+
+input, button.main {
+    width: 100%;
+    padding: 13px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    background: var(--card);
+    color: var(--text);
+}
+
+button.main {
+    background: var(--header);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.switch {
+    text-align: center;
+    font-size: 13px;
+}
+
+.switch a {
+    color: var(--header);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* CHAT */
+#chat-screen {
+    display: flex;
+    flex-direction: column;
+}
+
+#messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: var(--bg);
+}
+
+.message {
+    max-width: 75%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    position: relative;
+}
+
+.my-message {
+    background: var(--mymsg);
+    margin-left: auto;
+}
+
+.their-message {
+    background: var(--theirmsg);
+    border: 1px solid var(--border);
+}
+
+.time {
+    font-size: 10px;
+    color: var(--subtext);
+    margin-top: 4px;
+    text-align: right;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--subtext);
+    display: none;
+}
+
+.my-message:hover .delete-btn {
+    display: block;
+}
+
+/* INPUT */
+.chat-input {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+}
+
+.chat-input input {
+    flex: 1;
+}
+</style>
 </head>
+
 <body>
-    <h1>🔒 Private Chat</h1>
-    
-    <!-- Authentication Screen -->
-    <div id="auth-screen" class="container">
-        <h2>Welcome!</h2>
-        <div id="login-form">
-            <input type="email" id="login-email" placeholder="Your Email">
-            <input type="password" id="login-password" placeholder="Password">
-            <button onclick="login()">Login</button>
-            <p class="info-message">First time? <a href="#" onclick="showRegister()">Register here</a></p>
-        </div>
-        
-        <div id="register-form" style="display:none;">
-            <input type="text" id="register-username" placeholder="Choose a Username">
-            <input type="email" id="register-email" placeholder="Your Email">
-            <input type="password" id="register-password" placeholder="Password (min 6 characters)">
-            <button onclick="register()">Create Account</button>
-            <p class="info-message">Already have account? <a href="#" onclick="showLogin()">Login here</a></p>
-        </div>
-    </div>
-    
-    <!-- Chat Screen -->
-    <div id="chat-screen" class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h2 style="margin: 0;">Chat Room</h2>
-            <button onclick="logout()" style="width: auto; padding: 8px 15px; font-size: 14px;">Logout</button>
-        </div>
-        
-        <div id="online-count">Online: <span id="online-users">1</span></div>
-        
-        <div id="messages">
-            <div class="info-message">Loading messages...</div>
-        </div>
-        
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="message-input" placeholder="Type your message..." onkeypress="checkEnter(event)">
-            <button onclick="sendMessage()" style="width: 100px;">Send</button>
-        </div>
-        
-        <div class="info-message" style="margin-top: 20px;">
-            This chat is encrypted and private. Only you and your friend can see messages.
-        </div>
+
+<!-- AUTH -->
+<div id="auth-screen" class="container">
+    <header>
+        <h1>Private Chat</h1>
+        <button onclick="toggleDark()">Dark</button>
+    </header>
+
+    <input type="email" id="login-email" placeholder="Email">
+    <input type="password" id="login-password" placeholder="Password">
+    <button class="main" onclick="login()">Login</button>
+
+    <div class="switch">
+        New here? <a href="#" onclick="showRegister()">Create account</a>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    
-    <script>
-        // === REPLACE WITH YOUR FIREBASE CONFIG ===
-        const firebaseConfig = {
-  apiKey: "AIzaSyC3z-0TFNvgAwGIxis--XAzPXjP30DeCe8",
-  authDomain: "maryum-f169b.firebaseapp.com",
-  databaseURL: "https://maryum-f169b-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "maryum-f169b",
-  storageBucket: "maryum-f169b.firebasestorage.app",
-  messagingSenderId: "120896430100",
-  appId: "1:120896430100:web:b4d139d1c2279721f2c701"
+    <div id="register-form" style="display:none;">
+        <input type="text" id="username" placeholder="Your name">
+        <input type="email" id="register-email" placeholder="Email">
+        <input type="password" id="register-password" placeholder="Password">
+        <button class="main" onclick="register()">Register</button>
+        <div class="switch">
+            <a href="#" onclick="showLogin()">Back to login</a>
+        </div>
+    </div>
+</div>
 
-        };
-        // === END CONFIG ===
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
-        
-        let currentUser = null;
-        
-        // Check if user is logged in
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user;
-                showChatScreen();
-                setupUserPresence();
-                loadMessages();
-            } else {
-                showAuthScreen();
-            }
+<!-- CHAT -->
+<div id="chat-screen" class="container">
+    <header>
+        <h1>Chat with Maryam</h1>
+        <button onclick="toggleDark()">Dark</button>
+    </header>
+
+    <div id="messages"></div>
+
+    <div class="chat-input">
+        <input type="text" id="message" placeholder="Type a message..." onkeypress="checkEnter(event)">
+        <button class="main" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+let currentUser;
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user;
+        showChat();
+        loadMessages();
+    } else {
+        showAuth();
+    }
+});
+
+/* UI */
+function showAuth() {
+    auth-screen.style.display = "block";
+    chat-screen.style.display = "none";
+}
+
+function showChat() {
+    auth-screen.style.display = "none";
+    chat-screen.style.display = "flex";
+}
+
+function showRegister() {
+    register-form.style.display = "block";
+}
+
+function showLogin() {
+    register-form.style.display = "none";
+}
+
+function toggleDark() {
+    document.body.classList.toggle("dark");
+}
+
+/* AUTH */
+function register() {
+    auth.createUserWithEmailAndPassword(
+        register-email.value,
+        register-password.value
+    ).then(res => {
+        return db.ref("users/" + res.user.uid).set({
+            name: username.value
         });
-        
-        // Show/Hide screens
-        function showAuthScreen() {
-            document.getElementById('auth-screen').style.display = 'block';
-            document.getElementById('chat-screen').style.display = 'none';
-        }
-        
-        function showChatScreen() {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'block';
-            document.getElementById('message-input').focus();
-        }
-        
-        function showRegister() {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('register-form').style.display = 'block';
-        }
-        
-        function showLogin() {
-            document.getElementById('register-form').style.display = 'none';
-            document.getElementById('login-form').style.display = 'block';
-        }
-        
-        // User Authentication
-        function register() {
-            const username = document.getElementById('register-username').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            
-            if (username.length < 2) {
-                alert('Please choose a username (min 2 characters)');
-                return;
-            }
-            
-            if (password.length < 6) {
-                alert('Password must be at least 6 characters');
-                return;
-            }
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Save username
-                    return database.ref('users/' + userCredential.user.uid).set({
-                        username: username,
-                        email: email,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP
-                    });
-                })
-                .then(() => {
-                    alert('Account created successfully!');
-                })
-                .catch((error) => {
-                    alert('Error: ' + error.message);
-                });
-        }
-        
-        function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    alert('Error: ' + error.message);
-                });
-        }
-        
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                // Remove from online users
-                if (currentUser) {
-                    database.ref('online/' + currentUser.uid).remove();
-                }
-                auth.signOut();
-            }
-        }
-        
-        // User Presence (who's online)
-        function setupUserPresence() {
-            const userStatusRef = database.ref('online/' + currentUser.uid);
-            
-            // Set user to online
-            userStatusRef.set({
-                username: currentUser.displayName || 'Anonymous',
-                lastSeen: firebase.database.ServerValue.TIMESTAMP,
-                online: true
-            });
-            
-            // Remove when user disconnects
-            userStatusRef.onDisconnect().remove();
-            
-            // Listen for online users
-            database.ref('online').on('value', (snapshot) => {
-                const onlineCount = snapshot.numChildren();
-                document.getElementById('online-users').textContent = onlineCount;
-            });
-        }
-        
-        // Chat Functions
-        function sendMessage() {
-            const messageInput = document.getElementById('message-input');
-            const message = messageInput.value.trim();
-            
-            if (!message) return;
-            
-            // Get username from database
-            database.ref('users/' + currentUser.uid + '/username').once('value')
-                .then((snapshot) => {
-                    const username = snapshot.val() || 'Anonymous';
-                    
-                    // Save message to database
-                    return database.ref('messages').push().set({
-                        text: message,
-                        senderId: currentUser.uid,
-                        senderName: username,
-                        timestamp: firebase.database.ServerValue.TIMESTAMP
-                    });
-                })
-                .then(() => {
-                    messageInput.value = '';
-                    messageInput.focus();
-                })
-                .catch((error) => {
-                    console.error('Error sending message:', error);
-                });
-        }
-        
-        function checkEnter(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-        
-        function loadMessages() {
-            const messagesRef = database.ref('messages').limitToLast(100);
-            
-            messagesRef.on('child_added', (snapshot) => {
-                const message = snapshot.val();
-                displayMessage(message, snapshot.key);
-            });
-        }
-        
-        function displayMessage(message, messageId) {
-            const messagesDiv = document.getElementById('messages');
-            const messageDiv = document.createElement('div');
-            
-            // Check if message already displayed
-            if (document.getElementById(messageId)) return;
-            
-            const isMyMessage = message.senderId === currentUser.uid;
-            
-            messageDiv.className = `message ${isMyMessage ? 'my-message' : 'their-message'}`;
-            messageDiv.id = messageId;
-            
-            const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            messageDiv.innerHTML = `
-                <div class="message-sender">${isMyMessage ? 'You' : message.senderName}</div>
-                <div>${message.text}</div>
-                <div class="timestamp">${time}</div>
-            `;
-            
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-        
-        // Initialize
-        showAuthScreen();
-    </script>
+    });
+}
+
+function login() {
+    auth.signInWithEmailAndPassword(
+        login-email.value,
+        login-password.value
+    );
+}
+
+/* CHAT */
+function sendMessage() {
+    if (!message.value) return;
+
+    db.ref("messages").push({
+        text: message.value,
+        uid: currentUser.uid,
+        time: Date.now()
+    });
+
+    message.value = "";
+}
+
+function checkEnter(e) {
+    if (e.key === "Enter") sendMessage();
+}
+
+function deleteMessage(id) {
+    db.ref("messages/" + id).remove();
+}
+
+function loadMessages() {
+    db.ref("messages").limitToLast(100).on("child_added", snap => {
+        const msg = snap.val();
+        const div = document.createElement("div");
+
+        div.className = "message " + 
+            (msg.uid === currentUser.uid ? "my-message" : "their-message");
+
+        div.innerHTML = `
+            ${msg.uid === currentUser.uid ? `<span class="delete-btn" onclick="deleteMessage('${snap.key}')">Delete</span>` : ""}
+            <div>${msg.text}</div>
+            <div class="time">
+                ${new Date(msg.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+            </div>
+        `;
+
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    });
+}
+</script>
+
 </body>
 </html>
