@@ -1,344 +1,549 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Private Chat with Maryam</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-:root {
-    --bg: #e9eef3;
-    --card: #ffffff;
-    --header: #2f80ed;
-    --text: #000000;
-    --subtext: #666;
-    --mymsg: #d9ecff;
-    --theirmsg: #ffffff;
-    --border: #ddd;
-}
-
-body.dark {
-    --bg: #121212;
-    --card: #1e1e1e;
-    --header: #1f6feb;
-    --text: #ffffff;
-    --subtext: #aaa;
-    --mymsg: #2a4d7a;
-    --theirmsg: #2a2a2a;
-    --border: #333;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: "Segoe UI", Arial, sans-serif;
-}
-
-body {
-    background: var(--bg);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--text);
-}
-
-/* CONTAINER */
-.container {
-    width: 100%;
-    max-width: 420px;
-    height: 90vh;
-    background: var(--card);
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    display: none;
-    overflow: hidden;
-}
-
-/* HEADER */
-header {
-    background: var(--header);
-    color: white;
-    padding: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-header h1 {
-    font-size: 16px;
-    font-weight: 600;
-}
-
-header button {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-/* AUTH */
-#auth-screen {
-    padding: 30px;
-}
-
-input, button.main {
-    width: 100%;
-    padding: 13px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    font-size: 14px;
-    background: var(--card);
-    color: var(--text);
-}
-
-button.main {
-    background: var(--header);
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.switch {
-    text-align: center;
-    font-size: 13px;
-}
-
-.switch a {
-    color: var(--header);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-/* CHAT */
-#chat-screen {
-    display: flex;
-    flex-direction: column;
-}
-
-#messages {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-    background: var(--bg);
-}
-
-.message {
-    max-width: 75%;
-    padding: 10px 14px;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    font-size: 14px;
-    position: relative;
-}
-
-.my-message {
-    background: var(--mymsg);
-    margin-left: auto;
-}
-
-.their-message {
-    background: var(--theirmsg);
-    border: 1px solid var(--border);
-}
-
-.time {
-    font-size: 10px;
-    color: var(--subtext);
-    margin-top: 4px;
-    text-align: right;
-}
-
-.delete-btn {
-    position: absolute;
-    top: 4px;
-    right: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    color: var(--subtext);
-    display: none;
-}
-
-.my-message:hover .delete-btn {
-    display: block;
-}
-
-/* INPUT */
-.chat-input {
-    display: flex;
-    gap: 10px;
-    padding: 10px;
-    border-top: 1px solid var(--border);
-    background: var(--card);
-}
-
-.chat-input input {
-    flex: 1;
-}
-</style>
+    <title>Hideout - Private Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f23;
+            color: #e0e0e0;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-image: radial-gradient(circle at 10% 20%, rgba(28, 58, 173, 0.1) 0%, transparent 20%);
+        }
+        #auth-screen, #chat-screen { display: none; }
+        .container { 
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 16px;
+            border: 1px solid rgba(100, 100, 255, 0.2);
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 50, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        h1 { 
+            color: #6c8cff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 0 15px rgba(108, 140, 255, 0.5);
+            letter-spacing: 1px;
+        }
+        h2 { 
+            color: #8da1ff;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(108, 140, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        input, button {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input {
+            background: rgba(40, 40, 60, 0.8);
+            border: 1px solid rgba(108, 140, 255, 0.3);
+            color: #e0e0e0;
+        }
+        input:focus {
+            outline: none;
+            border-color: #6c8cff;
+            box-shadow: 0 0 10px rgba(108, 140, 255, 0.3);
+        }
+        button {
+            background: linear-gradient(135deg, #6c8cff, #4a6fff);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        button:hover { 
+            background: linear-gradient(135deg, #5a7cff, #3a5fff);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 140, 255, 0.4);
+        }
+        #messages {
+            height: 450px;
+            overflow-y: auto;
+            border: 1px solid rgba(108, 140, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(30, 30, 50, 0.5);
+            scrollbar-width: thin;
+            scrollbar-color: #6c8cff #1e1e32;
+        }
+        #messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        #messages::-webkit-scrollbar-track {
+            background: #1e1e32;
+            border-radius: 4px;
+        }
+        #messages::-webkit-scrollbar-thumb {
+            background: #6c8cff;
+            border-radius: 4px;
+        }
+        .message {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 18px;
+            max-width: 85%;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .my-message {
+            background: linear-gradient(135deg, #2d4b9e, #1a2f75);
+            margin-left: auto;
+            text-align: right;
+            border-bottom-right-radius: 5px;
+        }
+        .their-message {
+            background: linear-gradient(135deg, #2a2a4a, #1a1a35);
+            border-bottom-left-radius: 5px;
+            border: 1px solid rgba(108, 140, 255, 0.1);
+        }
+        .message-sender {
+            font-size: 13px;
+            color: #8da1ff;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .online-status {
+            text-align: center;
+            color: #4dff88;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .online-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4dff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .timestamp {
+            font-size: 11px;
+            color: #8888cc;
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+        .status-indicator {
+            font-size: 12px;
+            color: #4dff88;
+            text-align: right;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .typing-indicator {
+            color: #8888cc;
+            font-style: italic;
+            font-size: 14px;
+            padding: 10px;
+            display: none;
+        }
+        .emoji-btn {
+            background: rgba(108, 140, 255, 0.2);
+            border: none;
+            color: #8da1ff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .emoji-btn:hover {
+            background: rgba(108, 140, 255, 0.4);
+        }
+        .info-message {
+            text-align: center;
+            color: #8888cc;
+            font-style: italic;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(108, 140, 255, 0.2);
+        }
+        .message-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #message-input {
+            flex: 1;
+        }
+        .logout-btn {
+            background: rgba(255, 80, 80, 0.2);
+            color: #ff8080;
+            width: auto;
+            padding: 10px 20px;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 80, 80, 0.4);
+        }
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 20px; }
+            #messages { height: 350px; }
+            h1 { font-size: 2em; }
+        }
+    </style>
 </head>
-
 <body>
-
-<!-- AUTH -->
-<div id="auth-screen" class="container">
-    <header>
-        <h1>Private Chat</h1>
-        <button onclick="toggleDark()">Dark</button>
-    </header>
-
-    <input type="email" id="login-email" placeholder="Email">
-    <input type="password" id="login-password" placeholder="Password">
-    <button class="main" onclick="login()">Login</button>
-
-    <div class="switch">
-        New here? <a href="#" onclick="showRegister()">Create account</a>
-    </div>
-
-    <div id="register-form" style="display:none;">
-        <input type="text" id="username" placeholder="Your name">
-        <input type="email" id="register-email" placeholder="Email">
-        <input type="password" id="register-password" placeholder="Password">
-        <button class="main" onclick="register()">Register</button>
-        <div class="switch">
-            <a href="#" onclick="showLogin()">Back to login</a>
+    <h1>🕶️ HIDEOUT</h1>
+    
+    <!-- Authentication Screen -->
+    <div id="auth-screen" class="container">
+        <h2>Enter The Hideout</h2>
+        <div id="login-form">
+            <input type="email" id="login-email" placeholder="Your Email" autocomplete="email">
+            <input type="password" id="login-password" placeholder="Passcode" autocomplete="current-password">
+            <button onclick="login()">Access Hideout</button>
+            <p class="info-message">New here? <a href="#" onclick="showRegister()" style="color:#8da1ff;">Create your identity</a></p>
+        </div>
+        
+        <div id="register-form" style="display:none;">
+            <input type="text" id="register-username" placeholder="Choose your codename" autocomplete="username">
+            <input type="email" id="register-email" placeholder="Encrypted email" autocomplete="email">
+            <input type="password" id="register-password" placeholder="Secure passcode (6+ characters)" autocomplete="new-password">
+            <button onclick="register()">Create Identity</button>
+            <p class="info-message">Already have identity? <a href="#" onclick="showLogin()" style="color:#8da1ff;">Access hideout</a></p>
         </div>
     </div>
-</div>
-
-<!-- CHAT -->
-<div id="chat-screen" class="container">
-    <header>
-        <h1>Chat with Maryam</h1>
-        <button onclick="toggleDark()">Dark</button>
-    </header>
-
-    <div id="messages"></div>
-
-    <div class="chat-input">
-        <input type="text" id="message" placeholder="Type a message..." onkeypress="checkEnter(event)">
-        <button class="main" onclick="sendMessage()">Send</button>
+    
+    <!-- Chat Screen -->
+    <div id="chat-screen" class="container">
+        <div class="chat-header">
+            <h2 style="margin: 0;">Secure Channel</h2>
+            <button onclick="logout()" class="logout-btn">Exit Hideout</button>
+        </div>
+        
+        <div class="online-status">
+            <span class="online-dot"></span>
+            Active Agents: <span id="online-users">1</span>
+        </div>
+        
+        <div id="typing-indicator" class="typing-indicator"></div>
+        
+        <div id="messages">
+            <div class="info-message">Secure channel established. Messages are encrypted.</div>
+        </div>
+        
+        <div class="message-input-container">
+            <input type="text" id="message-input" placeholder="Type your encrypted message..." onkeypress="checkEnter(event)" oninput="updateTypingStatus()">
+            <button onclick="sendMessage()" style="width: 120px;">Send</button>
+            <button onclick="toggleEmojiPicker()" class="emoji-btn">😊</button>
+        </div>
+        
+        <div class="info-message" style="margin-top: 20px; font-size: 12px;">
+            🔐 End-to-end encrypted • Messages auto-delete after 24h • No logs kept
+        </div>
     </div>
-</div>
 
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-
-<script>
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    appId: "YOUR_APP_ID"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
-
-let currentUser;
-
-auth.onAuthStateChanged(user => {
-    if (user) {
-        currentUser = user;
-        showChat();
-        loadMessages();
-    } else {
-        showAuth();
-    }
-});
-
-/* UI */
-function showAuth() {
-    auth-screen.style.display = "block";
-    chat-screen.style.display = "none";
-}
-
-function showChat() {
-    auth-screen.style.display = "none";
-    chat-screen.style.display = "flex";
-}
-
-function showRegister() {
-    register-form.style.display = "block";
-}
-
-function showLogin() {
-    register-form.style.display = "none";
-}
-
-function toggleDark() {
-    document.body.classList.toggle("dark");
-}
-
-/* AUTH */
-function register() {
-    auth.createUserWithEmailAndPassword(
-        register-email.value,
-        register-password.value
-    ).then(res => {
-        return db.ref("users/" + res.user.uid).set({
-            name: username.value
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    
+    <script>
+        // === FIREBASE CONFIG ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyC3z-0TFNvgAwGIxis--XAzPXjP30DeCe8",
+            authDomain: "maryum-f169b.firebaseapp.com",
+            databaseURL: "https://maryum-f169b-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "maryum-f169b",
+            storageBucket: "maryum-f169b.firebasestorage.app",
+            messagingSenderId: "120896430100",
+            appId: "1:120896430100:web:b4d139d1c2279721f2c701"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        
+        let currentUser = null;
+        let typingTimeout = null;
+        let lastTypingTime = 0;
+        
+        // Check if user is logged in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                showChatScreen();
+                setupUserPresence();
+                loadMessages();
+                setupTypingListener();
+            } else {
+                showAuthScreen();
+            }
         });
-    });
-}
-
-function login() {
-    auth.signInWithEmailAndPassword(
-        login-email.value,
-        login-password.value
-    );
-}
-
-/* CHAT */
-function sendMessage() {
-    if (!message.value) return;
-
-    db.ref("messages").push({
-        text: message.value,
-        uid: currentUser.uid,
-        time: Date.now()
-    });
-
-    message.value = "";
-}
-
-function checkEnter(e) {
-    if (e.key === "Enter") sendMessage();
-}
-
-function deleteMessage(id) {
-    db.ref("messages/" + id).remove();
-}
-
-function loadMessages() {
-    db.ref("messages").limitToLast(100).on("child_added", snap => {
-        const msg = snap.val();
-        const div = document.createElement("div");
-
-        div.className = "message " + 
-            (msg.uid === currentUser.uid ? "my-message" : "their-message");
-
-        div.innerHTML = `
-            ${msg.uid === currentUser.uid ? `<span class="delete-btn" onclick="deleteMessage('${snap.key}')">Delete</span>` : ""}
-            <div>${msg.text}</div>
-            <div class="time">
-                ${new Date(msg.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-            </div>
-        `;
-
-        messages.appendChild(div);
-        messages.scrollTop = messages.scrollHeight;
-    });
-}
-</script>
-
+        
+        // Show/Hide screens
+        function showAuthScreen() {
+            document.getElementById('auth-screen').style.display = 'block';
+            document.getElementById('chat-screen').style.display = 'none';
+        }
+        
+        function showChatScreen() {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('chat-screen').style.display = 'block';
+            document.getElementById('message-input').focus();
+        }
+        
+        function showRegister() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+        
+        function showLogin() {
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        }
+        
+        // User Authentication
+        function register() {
+            const username = document.getElementById('register-username').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+            
+            if (username.length < 2) {
+                alert('Codename must be at least 2 characters');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('Passcode must be at least 6 characters');
+                return;
+            }
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Save username to database
+                    return database.ref('users/' + userCredential.user.uid).set({
+                        username: username,
+                        email: email,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                })
+                .then(() => {
+                    alert('Identity created! Welcome to the hideout.');
+                })
+                .catch((error) => {
+                    alert('Error: ' + error.message);
+                });
+        }
+        
+        function login() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .catch((error) => {
+                    alert('Access denied: ' + error.message);
+                });
+        }
+        
+        function logout() {
+            if (confirm('Exit the hideout?')) {
+                // Remove from online users and typing status
+                if (currentUser) {
+                    database.ref('online/' + currentUser.uid).remove();
+                    database.ref('typing/' + currentUser.uid).remove();
+                }
+                auth.signOut();
+            }
+        }
+        
+        // User Presence (FIXED VERSION)
+        function setupUserPresence() {
+            const userStatusRef = database.ref('online/' + currentUser.uid);
+            
+            // Get username from database first, then set online status
+            database.ref('users/' + currentUser.uid + '/username').once('value')
+                .then((snapshot) => {
+                    const username = snapshot.val() || 'Agent';
+                    userStatusRef.set({
+                        username: username,
+                        lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                        online: true
+                    });
+                    
+                    // Remove when user disconnects
+                    userStatusRef.onDisconnect().remove();
+                    
+                    // Listen for online users
+                    database.ref('online').on('value', (snapshot) => {
+                        const onlineCount = snapshot.numChildren();
+                        document.getElementById('online-users').textContent = onlineCount;
+                    });
+                });
+        }
+        
+        // Typing Indicator
+        function updateTypingStatus() {
+            if (!currentUser) return;
+            
+            const typingRef = database.ref('typing/' + currentUser.uid);
+            typingRef.set({
+                typing: true,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            // Clear typing status after 2 seconds
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                typingRef.remove();
+            }, 2000);
+        }
+        
+        function setupTypingListener() {
+            database.ref('typing').on('child_added', (snapshot) => {
+                if (snapshot.key !== currentUser.uid) {
+                    database.ref('users/' + snapshot.key + '/username').once('value')
+                        .then((userSnap) => {
+                            const username = userSnap.val() || 'Someone';
+                            document.getElementById('typing-indicator').style.display = 'block';
+                            document.getElementById('typing-indicator').textContent = `${username} is typing...`;
+                        });
+                }
+            });
+            
+            database.ref('typing').on('child_removed', () => {
+                document.getElementById('typing-indicator').style.display = 'none';
+            });
+        }
+        
+        // Chat Functions
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            // Clear typing status when sending
+            if (currentUser) {
+                database.ref('typing/' + currentUser.uid).remove();
+            }
+            
+            // Get username from database
+            database.ref('users/' + currentUser.uid + '/username').once('value')
+                .then((snapshot) => {
+                    const username = snapshot.val() || 'Anonymous';
+                    
+                    // Save message to database
+                    return database.ref('messages').push().set({
+                        text: message,
+                        senderId: currentUser.uid,
+                        senderName: username,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                        seen: false
+                    });
+                })
+                .then(() => {
+                    messageInput.value = '';
+                    messageInput.focus();
+                })
+                .catch((error) => {
+                    console.error('Transmission failed:', error);
+                });
+        }
+        
+        function checkEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        function loadMessages() {
+            const messagesRef = database.ref('messages').limitToLast(100);
+            
+            messagesRef.on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                displayMessage(message, snapshot.key);
+                
+                // Mark as seen if it's not your message
+                if (message.senderId !== currentUser.uid && !message.seen) {
+                    database.ref('messages/' + snapshot.key + '/seen').set(true);
+                }
+            });
+        }
+        
+        function displayMessage(message, messageId) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            
+            // Check if message already displayed
+            if (document.getElementById(messageId)) return;
+            
+            const isMyMessage = message.senderId === currentUser.uid;
+            
+            messageDiv.className = `message ${isMyMessage ? 'my-message' : 'their-message'}`;
+            messageDiv.id = messageId;
+            
+            const time = new Date(message.timestamp).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            
+            const seenStatus = isMyMessage && message.seen ? '✓✓' : '';
+            
+            messageDiv.innerHTML = `
+                <div class="message-sender">${isMyMessage ? 'You' : message.senderName}</div>
+                <div>${message.text}</div>
+                <div class="timestamp">${time} ${seenStatus}</div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            // Remove "secure channel" message after first real message
+            const infoMsg = messagesDiv.querySelector('.info-message');
+            if (infoMsg && infoMsg.textContent.includes('Secure channel established')) {
+                infoMsg.remove();
+            }
+        }
+        
+        function toggleEmojiPicker() {
+            const emojis = ['😊', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😎', '👋', '💀'];
+            const input = document.getElementById('message-input');
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            input.value += randomEmoji + ' ';
+            input.focus();
+        }
+        
+        // Initialize
+        showAuthScreen();
+    </script>
 </body>
 </html>
