@@ -1,313 +1,728 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Hideout - Private Chat</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat — Private Messages</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { 
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #0f0f23;
-        color: #e0e0e0;
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 20px;
-        background-image: radial-gradient(circle at 10% 20%, rgba(28, 58, 173, 0.1) 0%, transparent 20%);
-    }
-    #auth-screen, #chat-screen { display: none; }
-    .container { 
-        background: rgba(20, 20, 40, 0.9);
-        border-radius: 16px;
-        border: 1px solid rgba(100, 100, 255, 0.2);
-        padding: 30px;
-        margin-top: 20px;
-        box-shadow: 0 8px 32px rgba(0, 0, 50, 0.3);
-        backdrop-filter: blur(10px);
-    }
-    h1 { 
-        color: #6c8cff;
-        text-align: center;
-        margin-bottom: 30px;
-        font-size: 2.5em;
-        text-shadow: 0 0 15px rgba(108, 140, 255, 0.5);
-        letter-spacing: 1px;
-    }
-    h2 { 
-        color: #8da1ff;
-        margin-bottom: 20px;
-        border-bottom: 2px solid rgba(108, 140, 255, 0.3);
-        padding-bottom: 10px;
-    }
-    /* FIXED INPUT FIELD - Now 100% visible! */
-    input {
-        width: 100%;
-        padding: 14px;
-        margin: 10px 0;
-        border-radius: 8px;
-        font-size: 16px;
-        transition: all 0.3s;
-        background: #1a1a35;
-        border: 2px solid #6c8cff;
-        color: #ffffff;
-        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
-    }
-    input:focus {
-        outline: none;
-        border-color: #8da1ff;
-        box-shadow: 0 0 10px rgba(108, 140, 255, 0.7), inset 0 0 5px rgba(0, 0, 0, 0.5);
-    }
-    input::placeholder {
-        color: #a0a0ff;
-        opacity: 0.8;
-    }
-    button {
-        padding: 14px;
-        border-radius: 8px;
-        font-size: 16px;
-        transition: all 0.3s;
-        background: linear-gradient(135deg, #6c8cff, #4a6fff);
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
-        letter-spacing: 0.5px;
-    }
-    button:hover { 
-        background: linear-gradient(135deg, #5a7cff, #3a5fff);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(108, 140, 255, 0.4);
-    }
-    #messages {
-        height: 450px;
-        overflow-y: auto;
-        border: 1px solid rgba(108, 140, 255, 0.2);
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        background: rgba(30, 30, 50, 0.5);
-        scrollbar-width: thin;
-        scrollbar-color: #6c8cff #1e1e32;
-    }
-    #messages::-webkit-scrollbar {
-        width: 8px;
-    }
-    #messages::-webkit-scrollbar-track {
-        background: #1e1e32;
-        border-radius: 4px;
-    }
-    #messages::-webkit-scrollbar-thumb {
-        background: #6c8cff;
-        border-radius: 4px;
-    }
-    .message {
-        margin-bottom: 20px;
-        padding: 15px 20px;
-        border-radius: 18px;
-        max-width: 85%;
-        word-wrap: break-word;
-        position: relative;
-        animation: fadeIn 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        color: #ffffff;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .my-message {
-        background: linear-gradient(135deg, #2d4b9e, #1a2f75);
-        margin-left: auto;
-        text-align: right;
-        border-bottom-right-radius: 5px;
-    }
-    .their-message {
-        background: linear-gradient(135deg, #2a2a4a, #1a1a35);
-        border-bottom-left-radius: 5px;
-        border: 1px solid rgba(108, 140, 255, 0.1);
-    }
-    .message-sender {
-        font-size: 13px;
-        color: #8da1ff;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-    .online-status {
-        text-align: center;
-        color: #4dff88;
-        margin-bottom: 15px;
-        font-weight: bold;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-    .online-dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        background: #4dff88;
-        border-radius: 50%;
-        animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
-    }
-    .timestamp {
-        font-size: 11px;
-        color: #8888cc;
-        margin-top: 8px;
-        opacity: 0.8;
-    }
-    .typing-indicator {
-        color: #4dff88;
-        font-style: italic;
-        font-size: 14px;
-        padding: 10px;
-        display: none;
-    }
-    /* FIXED Emoji Button - Smaller and better */
-    .emoji-btn {
-        background: rgba(108, 140, 255, 0.3);
-        border: 1px solid rgba(108, 140, 255, 0.5);
-        color: #ffffff;
-        padding: 12px 15px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 18px;
-        width: 60px;
-        min-width: 60px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .emoji-btn:hover {
-        background: rgba(108, 140, 255, 0.5);
-        transform: scale(1.05);
-    }
-    .info-message {
-        text-align: center;
-        color: #8888cc;
-        font-style: italic;
-        margin: 15px 0;
-        font-size: 14px;
-    }
-    .chat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid rgba(108, 140, 255, 0.2);
-    }
-    /* FIXED Message Input Container */
-    .message-input-container {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-    #message-input {
-        flex: 1;
-        min-height: 48px;
-    }
-    .send-btn {
-        width: 100px;
-        height: 48px;
-    }
-    .logout-btn {
-        background: rgba(255, 80, 80, 0.2);
-        color: #ff8080;
-        width: auto;
-        padding: 10px 20px;
-        height: auto;
-    }
-    .logout-btn:hover {
-        background: rgba(255, 80, 80, 0.4);
-    }
-    @media (max-width: 600px) {
-        body { padding: 10px; }
-        .container { padding: 20px; }
-        #messages { height: 350px; }
-        h1 { font-size: 2em; }
-        .message-input-container {
-            flex-wrap: wrap;
+        :root {
+            --primary: #0095f6;
+            --primary-hover: #0081d6;
+            --background: #ffffff;
+            --surface: #fafafa;
+            --border: #dbdbdb;
+            --text-primary: #262626;
+            --text-secondary: #8e8e8e;
+            --text-light: #a8a8a8;
+            --message-sent: #0095f6;
+            --message-received: #efefef;
+            --online: #4cd964;
+            --typing: #8e8e8e;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        #message-input {
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #000000;
+                --surface: #121212;
+                --border: #363636;
+                --text-primary: #f5f5f5;
+                --text-secondary: #a8a8a8;
+                --text-light: #737373;
+                --message-received: #262626;
+                --shadow: rgba(255, 255, 255, 0.05);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.5;
+            height: 100vh;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--surface);
+            box-shadow: 0 0 40px var(--shadow);
+        }
+
+        /* Auth Screen */
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
-            order: 1;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
         }
+
+        .auth-card {
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-logo {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .auth-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .auth-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .auth-input {
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: var(--background);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .auth-btn {
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .auth-switch {
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .auth-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Chat Screen */
+        .chat-container {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            animation: slideIn 0.4s ease;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--background);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .chat-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .user-status {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-presence {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--online);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .icon-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Messages Container */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--surface);
+            scroll-behavior: smooth;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .message-date {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            margin: 24px 0;
+            position: relative;
+        }
+
+        .message-date::before,
+        .message-date::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .message-date::before {
+            left: 0;
+        }
+
+        .message-date::after {
+            right: 0;
+        }
+
+        /* Message Bubbles */
+        .message-group {
+            margin-bottom: 20px;
+            animation: messageSlide 0.3s ease;
+        }
+
+        .message-group.received {
+            align-self: flex-start;
+        }
+
+        .message-group.sent {
+            align-self: flex-end;
+        }
+
+        .message-sender {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            padding: 0 12px;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+            animation: bubbleAppear 0.25s ease;
+            transition: var(--transition);
+        }
+
+        .message-bubble.received {
+            background: var(--message-received);
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+
+        .message-bubble.sent {
+            background: var(--message-sent);
+            color: white;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message-bubble:not(.sent) + .message-bubble:not(.sent) {
+            margin-top: 4px;
+            border-top-left-radius: 4px;
+        }
+
+        .message-bubble.sent + .message-bubble.sent {
+            margin-top: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-top: 4px;
+            text-align: right;
+            padding-right: 4px;
+        }
+
+        .message-status {
+            display: inline-flex;
+            margin-left: 4px;
+            font-size: 0.7rem;
+        }
+
+        .message-status.seen {
+            color: var(--primary);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--message-received);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            max-width: 70%;
+            margin-bottom: 20px;
+            animation: typingPulse 1.5s infinite;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--typing);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        .typing-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Message Input */
+        .input-container {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--background);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            font-size: 0.95rem;
+            background: var(--surface);
+            color: var(--text-primary);
+            transition: var(--transition);
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            line-height: 1.4;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--background);
+        }
+
         .send-btn {
-            width: 45%;
-            order: 2;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
         }
-        .emoji-btn {
-            width: 45%;
-            order: 3;
+
+        .send-btn:hover {
+            background: var(--primary-hover);
+            transform: scale(1.05);
         }
-    }
-</style>
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .send-btn i {
+            font-size: 1.1rem;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 40px;
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 24px;
+            opacity: 0.8;
+        }
+
+        .welcome-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .welcome-text {
+            color: var(--text-secondary);
+            max-width: 400px;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes messageSlide {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes bubbleAppear {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        @keyframes typingPulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error States */
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                max-width: 100%;
+            }
+
+            .auth-card {
+                padding: 30px 20px;
+                border: none;
+                background: transparent;
+            }
+
+            .chat-container {
+                flex-direction: column;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .input-container {
+                padding: 12px 16px;
+            }
+
+            .message-input {
+                font-size: 1rem;
+            }
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+            animation: slideIn 0.3s ease;
+        }
+
+        .connection-status.online {
+            background: rgba(76, 217, 100, 0.1);
+            color: var(--online);
+            border: 1px solid rgba(76, 217, 100, 0.2);
+        }
+
+        .connection-status.offline {
+            background: rgba(255, 59, 48, 0.1);
+            color: #ff3b30;
+            border: 1px solid rgba(255, 59, 48, 0.2);
+        }
+    </style>
 </head>
 <body>
-    <h1>🕶️ HIDEOUT</h1>
-    
-    <!-- Authentication Screen -->
-    <div id="auth-screen" class="container">
-        <h2>Enter The Hideout</h2>
-        <div id="login-form">
-            <input type="email" id="login-email" placeholder="Your Email" autocomplete="email">
-            <input type="password" id="login-password" placeholder="Passcode" autocomplete="current-password">
-            <button onclick="login()" style="width:100%;">Access Hideout</button>
-            <p class="info-message">New here? <a href="#" onclick="showRegister()" style="color:#8da1ff;">Create your identity</a></p>
+    <div class="app-container">
+        <!-- Authentication Screen -->
+        <div class="auth-container" id="authContainer">
+            <div class="auth-card">
+                <div class="auth-logo">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h1 class="auth-title">Welcome to Chat</h1>
+                <p class="auth-subtitle">Sign in to start messaging privately</p>
+                
+                <div class="auth-form" id="loginForm">
+                    <input type="email" class="auth-input" id="loginEmail" placeholder="Email" required>
+                    <input type="password" class="auth-input" id="loginPassword" placeholder="Password" required>
+                    <button class="auth-btn" onclick="login()">Sign In</button>
+                </div>
+                
+                <div class="auth-form" id="registerForm" style="display: none;">
+                    <input type="text" class="auth-input" id="registerName" placeholder="Full Name" required>
+                    <input type="email" class="auth-input" id="registerEmail" placeholder="Email" required>
+                    <input type="password" class="auth-input" id="registerPassword" placeholder="Password (min. 6 characters)" required>
+                    <button class="auth-btn" onclick="register()">Create Account</button>
+                </div>
+                
+                <p class="auth-switch">
+                    <span id="switchText">Don't have an account?</span>
+                    <a class="auth-link" id="switchLink" onclick="toggleAuthForm()">Sign up</a>
+                </p>
+            </div>
         </div>
-        
-        <div id="register-form" style="display:none;">
-            <input type="text" id="register-username" placeholder="Choose your codename" autocomplete="username">
-            <input type="email" id="register-email" placeholder="Encrypted email" autocomplete="email">
-            <input type="password" id="register-password" placeholder="Secure passcode (6+ characters)" autocomplete="new-password">
-            <button onclick="register()" style="width:100%;">Create Identity</button>
-            <p class="info-message">Already have identity? <a href="#" onclick="showLogin()" style="color:#8da1ff;">Access hideout</a></p>
+
+        <!-- Chat Screen -->
+        <div class="chat-container" id="chatContainer">
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="chat-user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-status">
+                        <div class="user-name" id="userName">User</div>
+                        <div class="user-presence">
+                            <span class="online-dot"></span>
+                            <span id="presenceText">Online</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-actions">
+                    <button class="icon-btn" onclick="toggleTheme()">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="icon-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="messages-container" id="messagesContainer">
+                <!-- Messages will be dynamically inserted here -->
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-icon">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <h2 class="welcome-title">Start a Conversation</h2>
+                    <p class="welcome-text" id="welcomeText">
+                        Share the link with a friend to start chatting privately.
+                        All messages are encrypted and secure.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                <div class="typing-text" id="typingText">is typing</div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-container">
+                <textarea 
+                    class="message-input" 
+                    id="messageInput" 
+                    placeholder="Message..." 
+                    rows="1"
+                    oninput="autoResize(this); handleTyping()"
+                    onkeydown="handleKeyDown(event)"
+                ></textarea>
+                <button class="send-btn" id="sendButton" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
         </div>
     </div>
-    
-    <!-- Chat Screen -->
-    <div id="chat-screen" class="container">
-        <div class="chat-header">
-            <h2 style="margin: 0;">Secure Channel</h2>
-            <button onclick="logout()" class="logout-btn">Exit Hideout</button>
-        </div>
-        
-        <div class="online-status">
-            <span class="online-dot"></span>
-            Active Agents: <span id="online-users">1</span>
-        </div>
-        
-        <div id="typing-indicator" class="typing-indicator"></div>
-        
-        <div id="messages">
-            <div class="info-message">Secure channel established. Messages are encrypted.</div>
-        </div>
-        
-        <div class="message-input-container">
-            <input type="text" id="message-input" placeholder="Type your encrypted message..." onkeypress="checkEnter(event)" oninput="updateTypingStatus()">
-            <button onclick="sendMessage()" class="send-btn">Send</button>
-            <button onclick="toggleEmojiPicker()" class="emoji-btn">😊</button>
-        </div>
-        
-        <div class="info-message" style="margin-top: 20px; font-size: 12px;">
-            🔐 End-to-end encrypted • Messages auto-delete after 24h • No logs kept
-        </div>
+
+    <!-- Connection Status -->
+    <div class="connection-status" id="connectionStatus" style="display: none;">
+        <i class="fas fa-wifi"></i>
+        <span>Connected</span>
     </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    
+
     <script>
-        // === FIREBASE CONFIG ===
+        // ========== FIREBASE CONFIGURATION ==========
         const firebaseConfig = {
             apiKey: "AIzaSyC3z-0TFNvgAwGIxis--XAzPXjP30DeCe8",
             authDomain: "maryum-f169b.firebaseapp.com",
@@ -317,172 +732,220 @@
             messagingSenderId: "120896430100",
             appId: "1:120896430100:web:b4d139d1c2279721f2c701"
         };
-        
+
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-        
+
+        // ========== STATE MANAGEMENT ==========
         let currentUser = null;
+        let otherUsers = new Map();
         let typingTimeout = null;
-        
-        // Check if user is logged in
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user;
-                showChatScreen();
-                setupUserPresence();
-                loadMessages();
-                setupTypingListener();
-            } else {
-                showAuthScreen();
-            }
-        });
-        
-        // Show/Hide screens
-        function showAuthScreen() {
-            document.getElementById('auth-screen').style.display = 'block';
-            document.getElementById('chat-screen').style.display = 'none';
+        let lastTypingTime = 0;
+        let messageQueue = [];
+        let isSending = false;
+        let connectionRef = null;
+
+        // ========== UI UTILITIES ==========
+        function showElement(id) {
+            document.getElementById(id).style.display = 'flex';
         }
-        
-        function showChatScreen() {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'block';
-            document.getElementById('message-input').focus();
+
+        function hideElement(id) {
+            document.getElementById(id).style.display = 'none';
         }
-        
-        function showRegister() {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('register-form').style.display = 'block';
+
+        function showAuth() {
+            showElement('authContainer');
+            hideElement('chatContainer');
         }
-        
-        function showLogin() {
-            document.getElementById('register-form').style.display = 'none';
-            document.getElementById('login-form').style.display = 'block';
+
+        function showChat() {
+            hideElement('authContainer');
+            showElement('chatContainer');
+            document.getElementById('messageInput').focus();
         }
-        
-        // User Authentication
-        function register() {
-            const username = document.getElementById('register-username').value.trim();
-            const email = document.getElementById('register-email').value.trim();
-            const password = document.getElementById('register-password').value;
+
+        function toggleAuthForm() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const switchText = document.getElementById('switchText');
+            const switchLink = document.getElementById('switchLink');
             
-            if (username.length < 2) {
-                alert('Codename must be at least 2 characters');
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'flex';
+                registerForm.style.display = 'none';
+                switchText.textContent = "Don't have an account?";
+                switchLink.textContent = "Sign up";
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'flex';
+                switchText.textContent = "Already have an account?";
+                switchLink.textContent = "Sign in";
+            }
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (date.toDateString() === today.toDateString()) {
+                return 'Today';
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return 'Yesterday';
+            } else {
+                return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            }
+        }
+
+        function getInitials(name) {
+            return name ? name.charAt(0).toUpperCase() : 'U';
+        }
+
+        // ========== AUTHENTICATION ==========
+        async function register() {
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            
+            if (name.length < 2) {
+                showError('Please enter a valid name (min 2 characters)');
                 return;
             }
             
             if (password.length < 6) {
-                alert('Passcode must be at least 6 characters');
+                showError('Password must be at least 6 characters');
                 return;
             }
             
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Save username to database
-                    return database.ref('users/' + userCredential.user.uid).set({
-                        username: username,
-                        email: email,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP
-                    });
-                })
-                .then(() => {
-                    alert('Identity created! Welcome to the hideout.');
-                })
-                .catch((error) => {
-                    alert('Error: ' + error.message);
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await database.ref('users/' + userCredential.user.uid).set({
+                    name: name,
+                    email: email,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    lastSeen: firebase.database.ServerValue.TIMESTAMP
                 });
-        }
-        
-        function login() {
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    alert('Access denied: ' + error.message);
-                });
-        }
-        
-        function logout() {
-            if (confirm('Exit the hideout?')) {
-                if (currentUser) {
-                    database.ref('online/' + currentUser.uid).remove();
-                    database.ref('typing/' + currentUser.uid).remove();
-                }
-                auth.signOut();
+                
+                showSuccess('Account created successfully!');
+                await login(); // Auto login after registration
+            } catch (error) {
+                showError(error.message);
             }
         }
-        
-        // User Presence
-        function setupUserPresence() {
-            const userStatusRef = database.ref('online/' + currentUser.uid);
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
             
-            database.ref('users/' + currentUser.uid + '/username').once('value')
-                .then((snapshot) => {
-                    const username = snapshot.val() || 'Agent';
-                    userStatusRef.set({
-                        username: username,
-                        lastSeen: firebase.database.ServerValue.TIMESTAMP,
-                        online: true
-                    });
-                    
-                    userStatusRef.onDisconnect().remove();
-                    
-                    database.ref('online').on('value', (snapshot) => {
-                        const onlineCount = snapshot.numChildren();
-                        document.getElementById('online-users').textContent = onlineCount;
-                    });
-                });
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showSuccess('Welcome back!');
+            } catch (error) {
+                showError(error.message);
+            }
         }
-        
-        // Typing Indicator
-        function updateTypingStatus() {
+
+        async function logout() {
+            if (currentUser) {
+                await database.ref('online/' + currentUser.uid).remove();
+                await database.ref('typing/' + currentUser.uid).remove();
+            }
+            await auth.signOut();
+            showSuccess('Logged out successfully');
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            errorDiv.style.animation = 'shake 0.5s';
+            
+            const authCard = document.querySelector('.auth-card');
+            authCard.insertBefore(errorDiv, authCard.firstChild);
+            
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            // Could implement toast notifications here
+            console.log('Success:', message);
+        }
+
+        // ========== USER PRESENCE ==========
+        async function setupUserPresence() {
             if (!currentUser) return;
             
-            const typingRef = database.ref('typing/' + currentUser.uid);
-            typingRef.set({
-                typing: true,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+            const userStatusRef = database.ref('online/' + currentUser.uid);
+            const userInfoRef = database.ref('users/' + currentUser.uid);
+            
+            // Get user info
+            const snapshot = await userInfoRef.once('value');
+            const userData = snapshot.val();
+            
+            if (userData) {
+                document.getElementById('userName').textContent = userData.name;
+                document.getElementById('userAvatar').textContent = getInitials(userData.name);
+            }
+            
+            // Set online status
+            await userStatusRef.set({
+                uid: currentUser.uid,
+                name: userData?.name || 'User',
+                lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                online: true
             });
             
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                typingRef.remove();
-            }, 2000);
-        }
-        
-        function setupTypingListener() {
-            database.ref('typing').on('child_added', (snapshot) => {
-                if (snapshot.key !== currentUser.uid) {
-                    database.ref('users/' + snapshot.key + '/username').once('value')
-                        .then((userSnap) => {
-                            const username = userSnap.val() || 'Someone';
-                            document.getElementById('typing-indicator').style.display = 'block';
-                            document.getElementById('typing-indicator').textContent = `${username} is typing...`;
-                        });
+            // Remove on disconnect
+            userStatusRef.onDisconnect().remove();
+            
+            // Listen for other users
+            database.ref('online').on('value', (snapshot) => {
+                const users = snapshot.val() || {};
+                const onlineUsers = Object.keys(users).length;
+                
+                if (onlineUsers > 1) {
+                    document.getElementById('presenceText').textContent = `${onlineUsers - 1} online`;
+                    document.getElementById('welcomeText').textContent = `${onlineUsers - 1} people are online`;
+                } else {
+                    document.getElementById('presenceText').textContent = 'Online';
+                    document.getElementById('welcomeText').textContent = 'Share the link with a friend to start chatting';
                 }
             });
-            
-            database.ref('typing').on('child_removed', () => {
-                document.getElementById('typing-indicator').style.display = 'none';
-            });
         }
-        
-        // Chat Functions
+
+        // ========== MESSAGING SYSTEM ==========
         function sendMessage() {
-            const messageInput = document.getElementById('message-input');
+            const messageInput = document.getElementById('messageInput');
             const message = messageInput.value.trim();
             
-            if (!message) return;
+            if (!message || !currentUser || isSending) return;
             
+            isSending = true;
+            document.getElementById('sendButton').innerHTML = '<div class="loading"></div>';
+            
+            // Clear typing status
             if (currentUser) {
                 database.ref('typing/' + currentUser.uid).remove();
             }
             
-            database.ref('users/' + currentUser.uid + '/username').once('value')
+            database.ref('users/' + currentUser.uid + '/name').once('value')
                 .then((snapshot) => {
-                    const username = snapshot.val() || 'Anonymous';
+                    const username = snapshot.val() || 'You';
                     
                     return database.ref('messages').push().set({
                         text: message,
@@ -494,76 +957,192 @@
                 })
                 .then(() => {
                     messageInput.value = '';
-                    messageInput.focus();
+                    messageInput.style.height = 'auto';
+                    isSending = false;
+                    document.getElementById('sendButton').innerHTML = '<i class="fas fa-paper-plane"></i>';
                 })
                 .catch((error) => {
-                    console.error('Transmission failed:', error);
+                    console.error('Error sending message:', error);
+                    isSending = false;
+                    document.getElementById('sendButton').innerHTML = '<i class="fas fa-paper-plane"></i>';
+                    showError('Failed to send message');
                 });
         }
-        
-        function checkEnter(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-        
+
         function loadMessages() {
             const messagesRef = database.ref('messages').limitToLast(100);
+            let lastDate = null;
             
             messagesRef.on('child_added', (snapshot) => {
                 const message = snapshot.val();
                 displayMessage(message, snapshot.key);
                 
+                // Mark as seen if it's not your message
                 if (message.senderId !== currentUser.uid && !message.seen) {
                     database.ref('messages/' + snapshot.key + '/seen').set(true);
                 }
             });
         }
-        
+
         function displayMessage(message, messageId) {
-            const messagesDiv = document.getElementById('messages');
-            const messageDiv = document.createElement('div');
+            const messagesContainer = document.getElementById('messagesContainer');
+            const welcomeScreen = document.getElementById('welcomeScreen');
             
+            // Hide welcome screen on first message
+            if (welcomeScreen.style.display !== 'none') {
+                welcomeScreen.style.display = 'none';
+            }
+            
+            // Check if message already exists
             if (document.getElementById(messageId)) return;
             
+            // Group messages by date
+            const messageDate = formatDate(message.timestamp);
+            let dateSeparator = null;
+            
+            if (messageDate !== lastDate) {
+                lastDate = messageDate;
+                dateSeparator = document.createElement('div');
+                dateSeparator.className = 'message-date';
+                dateSeparator.textContent = messageDate;
+                messagesContainer.appendChild(dateSeparator);
+            }
+            
+            // Create message group
             const isMyMessage = message.senderId === currentUser.uid;
+            const messageGroup = document.createElement('div');
+            messageGroup.className = `message-group ${isMyMessage ? 'sent' : 'received'}`;
+            messageGroup.id = messageId;
             
-            messageDiv.className = `message ${isMyMessage ? 'my-message' : 'their-message'}`;
-            messageDiv.id = messageId;
+            // Add sender name for received messages
+            if (!isMyMessage) {
+                const senderName = document.createElement('div');
+                senderName.className = 'message-sender';
+                senderName.textContent = message.senderName;
+                messageGroup.appendChild(senderName);
+            }
             
-            const time = new Date(message.timestamp).toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true 
+            // Create message bubble
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `message-bubble ${isMyMessage ? 'sent' : 'received'}`;
+            messageBubble.textContent = message.text;
+            
+            // Add timestamp and status
+            const messageFooter = document.createElement('div');
+            messageFooter.className = 'message-time';
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.textContent = formatTime(message.timestamp);
+            
+            const statusSpan = document.createElement('span');
+            statusSpan.className = `message-status ${message.seen ? 'seen' : ''}`;
+            statusSpan.innerHTML = isMyMessage ? (message.seen ? ' ✓✓' : ' ✓') : '';
+            
+            messageFooter.appendChild(timeSpan);
+            messageFooter.appendChild(statusSpan);
+            
+            messageBubble.appendChild(messageFooter);
+            messageGroup.appendChild(messageBubble);
+            messagesContainer.appendChild(messageGroup);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // ========== TYPING INDICATOR ==========
+        function handleTyping() {
+            if (!currentUser) return;
+            
+            const typingRef = database.ref('typing/' + currentUser.uid);
+            typingRef.set({
+                name: document.getElementById('userName').textContent,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
             });
             
-            const seenStatus = isMyMessage && message.seen ? '✓✓' : '';
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                typingRef.remove();
+            }, 2000);
+        }
+
+        function setupTypingListener() {
+            database.ref('typing').on('child_added', (snapshot) => {
+                if (snapshot.key !== currentUser.uid) {
+                    const typingData = snapshot.val();
+                    document.getElementById('typingText').textContent = `${typingData.name} is typing`;
+                    document.getElementById('typingIndicator').style.display = 'flex';
+                }
+            });
             
-            messageDiv.innerHTML = `
-                <div class="message-sender">${isMyMessage ? 'You' : message.senderName}</div>
-                <div>${message.text}</div>
-                <div class="timestamp">${time} ${seenStatus}</div>
-            `;
-            
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            
-            const infoMsg = messagesDiv.querySelector('.info-message');
-            if (infoMsg && infoMsg.textContent.includes('Secure channel established')) {
-                infoMsg.remove();
+            database.ref('typing').on('child_removed', () => {
+                document.getElementById('typingIndicator').style.display = 'none';
+            });
+        }
+
+        // ========== KEYBOARD HANDLING ==========
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
             }
         }
-        
-        function toggleEmojiPicker() {
-            const emojis = ['😊', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😎', '👋', '💀', '😘', '🥺', '🙏', '🎯', '🚀'];
-            const input = document.getElementById('message-input');
-            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-            input.value += randomEmoji + ' ';
-            input.focus();
+
+        // ========== THEME TOGGLE ==========
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.style.colorScheme === 'dark';
+            html.style.colorScheme = isDark ? 'light' : 'dark';
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
         }
-        
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.style.colorScheme = savedTheme;
+        }
+
+        // ========== CONNECTION MONITORING ==========
+        function monitorConnection() {
+            const connectionStatus = document.getElementById('connectionStatus');
+            
+            database.ref('.info/connected').on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    connectionStatus.className = 'connection-status online';
+                    connectionStatus.innerHTML = '<i class="fas fa-wifi"></i><span>Connected</span>';
+                    connectionStatus.style.display = 'flex';
+                    
+                    setTimeout(() => {
+                        connectionStatus.style.opacity = '0';
+                        setTimeout(() => {
+                            connectionStatus.style.display = 'none';
+                        }, 300);
+                    }, 2000);
+                } else {
+                    connectionStatus.className = 'connection-status offline';
+                    connectionStatus.innerHTML = '<i class="fas fa-wifi-slash"></i><span>Connecting...</span>';
+                    connectionStatus.style.display = 'flex';
+                    connectionStatus.style.opacity = '1';
+                }
+            });
+        }
+
+        // ========== INITIALIZATION ==========
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                showChat();
+                setupUserPresence();
+                loadMessages();
+                setupTypingListener();
+                monitorConnection();
+            } else {
+                currentUser = null;
+                showAuth();
+            }
+        });
+
         // Initialize
-        showAuthScreen();
+        showAuth();
     </script>
 </body>
 </html>
