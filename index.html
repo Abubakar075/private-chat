@@ -1,15 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatConnect - Modern Messaging</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
     <style>
-        /* Dark Mode Variables */
+        body { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { -webkit-tap-highlight-color: transparent; }
+        
         :root {
             --bg-primary: #f0f4f8;
             --bg-secondary: #ffffff;
@@ -18,6 +25,10 @@
             --text-secondary: #4a5568;
             --border-color: #e2e8f0;
             --shadow: rgba(0, 0, 0, 0.1);
+            --accent-primary: #3b82f6;
+            --accent-secondary: #64748b;
+            --message-sent: #3b82f6;
+            --message-received: #e5e7eb;
         }
         
         .dark-mode {
@@ -28,40 +39,18 @@
             --text-secondary: #cbd5e1;
             --border-color: #334155;
             --shadow: rgba(0, 0, 0, 0.3);
-        }
-        
-        body {
-            box-sizing: border-box;
-            transition: background-color 0.3s ease;
+            --message-sent: #2563eb;
+            --message-received: #475569;
         }
         
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
-        }
-        
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-5px);
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         .message-animation {
@@ -94,33 +83,6 @@
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
         
-        .emoji-picker {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 10px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-        }
-        
-        .emoji-btn {
-            font-size: 24px;
-            padding: 8px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: transform 0.2s, background-color 0.2s;
-            background: transparent;
-            border: none;
-        }
-        
-        .emoji-btn:hover {
-            transform: scale(1.2);
-            background-color: var(--bg-tertiary);
-        }
-        
         .online-indicator {
             width: 8px;
             height: 8px;
@@ -130,554 +92,506 @@
             animation: pulse 2s infinite;
         }
         
-        .message-bubble {
-            position: relative;
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            margin-bottom: 4px;
-            word-wrap: break-word;
+        .offline-indicator {
+            width: 8px;
+            height: 8px;
+            background: #6b7280;
+            border-radius: 50%;
+            display: inline-block;
         }
         
-        .message-bubble.user {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            border-bottom-right-radius: 4px;
-            margin-left: auto;
-        }
-        
-        .message-bubble.other {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border-bottom-left-radius: 4px;
-        }
-        
-        .message-bubble.system {
-            background: rgba(251, 191, 36, 0.1);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            color: var(--text-primary);
-            border-radius: 8px;
-            text-align: center;
-            max-width: 90%;
-            margin: 0 auto;
-        }
-        
-        .message-sender {
-            font-size: 0.75rem;
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 4px;
-            opacity: 0.9;
+            flex-shrink: 0;
         }
         
-        .message-time {
-            font-size: 0.7rem;
-            margin-top: 4px;
-            text-align: right;
-            opacity: 0.8;
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 16px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+        
+        .loading-spinner {
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--accent-primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Emoji picker grid */
+        .emoji-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .emoji-btn {
+            font-size: 24px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: transform 0.2s, background-color 0.2s;
+            border: none;
+            background: transparent;
+        }
+        
+        .emoji-btn:hover {
+            transform: scale(1.2);
+            background-color: var(--bg-tertiary);
         }
     </style>
 </head>
-<body class="h-screen bg-gray-50 dark:bg-gray-900">
-    <!-- Login Screen -->
-    <div id="login-screen" class="w-full h-full flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
-            <div class="text-center mb-8">
-                <div class="text-5xl mb-4">
-                    💬
+<body class="h-full overflow-auto">
+    <div id="app-wrapper" class="w-full h-full flex flex-col" style="background-color: var(--bg-primary); color: var(--text-primary);">
+        <!-- Login Screen -->
+        <div id="login-screen" class="w-full h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8" style="background-color: var(--bg-secondary);">
+                <div class="text-center mb-8">
+                    <div class="text-5xl mb-4">💬</div>
+                    <h1 id="app-title-login" class="text-3xl font-bold mb-2">ChatConnect</h1>
+                    <p id="welcome-msg" class="text-gray-600">Connect with friends instantly</p>
                 </div>
-                <h1 id="app-title-login" class="text-3xl font-bold mb-2 dark:text-white">ChatConnect</h1>
-                <p id="welcome-msg" class="text-gray-600 dark:text-gray-300">Connect with friends instantly</p>
-            </div>
-            
-            <!-- Login Form -->
-            <div id="login-form" class="space-y-4">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                    <input type="email" id="email" required 
-                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                           placeholder="your@email.com">
-                </div>
-                
-                <div id="login-fields">
-                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                    <input type="password" id="password" required 
-                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                           placeholder="••••••••">
-                </div>
-                
-                <div id="register-fields" class="hidden">
-                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
-                    <input type="text" id="username" 
-                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                           placeholder="Choose a username">
-                </div>
-                
-                <button id="auth-button" onclick="login()" 
-                        class="w-full py-3 rounded-lg font-semibold transition-all transform hover:scale-105 bg-blue-500 hover:bg-blue-600 text-white">
-                    Sign In
-                </button>
-                
-                <div class="flex items-center justify-between">
-                    <button type="button" id="switch-auth" onclick="toggleAuthForm()" 
-                            class="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400">
-                        Create an account
-                    </button>
-                    
-                    <button type="button" id="reset-password" onclick="resetPassword()" 
-                            class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400">
-                        Forgot password?
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Firebase Status -->
-            <div id="firebase-status" class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
-                    ✅ <strong>Firebase Connected</strong>
-                </p>
-                <p class="text-xs text-gray-600 dark:text-gray-300">
-                    Real-time messaging is enabled. Messages are secure and private.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Chat Interface -->
-    <div id="chat-screen" class="hidden w-full h-full flex flex-col">
-        <!-- Header -->
-        <header class="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800">
-            <div class="flex items-center space-x-3">
-                <div class="text-3xl">
-                    💬
-                </div>
-                <div>
-                    <h1 id="app-title-header" class="text-xl font-bold text-gray-900 dark:text-white">ChatConnect</h1>
-                    <div class="flex items-center space-x-1">
-                        <span class="online-indicator"></span>
-                        <p class="text-xs text-gray-600 dark:text-gray-300" id="online-status">Online</p>
-                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-2" id="user-count">• 1 online</span>
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input type="text" id="username" required 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" 
+                            placeholder="Enter your username">
                     </div>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button id="theme-toggle" onclick="toggleDarkMode()" 
-                        class="p-2 rounded-lg transition-all hover:scale-110 bg-gray-100 dark:bg-gray-700">
-                    <span id="theme-icon" class="text-2xl">🌙</span>
-                </button>
-                <button id="logout-button" onclick="logout()" 
-                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all hover:scale-105 bg-red-500 hover:bg-red-600 text-white">
-                    Logout
-                </button>
-            </div>
-        </header>
-
-        <!-- Chat Area -->
-        <div class="flex-1 overflow-hidden flex flex-col">
-            <!-- Messages Container -->
-            <div id="messages-container" class="flex-1 overflow-auto chat-scroll p-6 space-y-4 bg-gray-50 dark:bg-gray-900">
-                <div class="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
-                    <p>👋 Welcome to ChatConnect! Start messaging below.</p>
-                </div>
-            </div>
-
-            <!-- Typing Indicator -->
-            <div id="typing-indicator" class="hidden px-6 py-2 text-sm text-gray-500 dark:text-gray-400 typing-indicator">
-                <div class="flex items-center space-x-2">
-                    <div class="flex space-x-1">
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
-                    </div>
-                    <span id="typing-text">Someone is typing...</span>
-                </div>
-            </div>
-
-            <!-- Message Input -->
-            <div class="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <!-- Emoji Picker -->
-                <div id="emoji-picker" class="hidden mb-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                    <div class="emoji-picker" id="emoji-grid"></div>
-                </div>
-
-                <form id="message-form" class="flex space-x-2" onsubmit="sendMessage(); return false;">
-                    <button type="button" id="emoji-toggle" onclick="toggleEmojiPicker()" 
-                            class="px-3 py-3 rounded-full font-semibold transition-all transform hover:scale-110 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                            title="Add Emoji">
-                        😊
-                    </button>
-                    
-                    <input type="text" id="message-input" required placeholder="Type a message..." 
-                           class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                           oninput="handleTyping()">
-                    
-                    <button type="submit" 
-                            class="px-6 py-3 rounded-full font-semibold transition-all transform hover:scale-105 bg-blue-500 hover:bg-blue-600 text-white">
-                        Send
+                    <button type="submit" class="w-full py-3 rounded-lg font-semibold transition-all transform hover:scale-105" 
+                            id="login-button" style="background-color: var(--accent-primary); color: white;">
+                        Start Chatting
                     </button>
                 </form>
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm font-semibold text-blue-800">✅ Firebase Connected</p>
+                    <p class="text-xs text-blue-600 mt-1">Real-time messaging is enabled</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Interface -->
+        <div id="chat-screen" class="hidden w-full h-full flex flex-col">
+            <!-- Header -->
+            <header class="flex-shrink-0 px-4 md:px-6 py-3 md:py-4 border-b flex items-center justify-between" 
+                    style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                <div class="flex items-center space-x-2 md:space-x-3">
+                    <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:scale-110 transition-all">
+                        <span class="text-2xl">☰</span>
+                    </button>
+                    <div class="text-2xl md:text-3xl">💬</div>
+                    <div>
+                        <h1 class="text-lg md:text-xl font-bold">ChatConnect</h1>
+                        <p class="text-xs text-gray-500" id="online-count">0 online</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="theme-toggle" class="p-2 rounded-lg hover:scale-110 transition-all">
+                        <span id="theme-icon" class="text-xl">🌙</span>
+                    </button>
+                    <button id="logout-button" class="px-3 md:px-4 py-2 text-sm rounded-lg transition-all hover:scale-105" 
+                            style="background-color: var(--accent-secondary); color: white;">
+                        Logout
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Area -->
+            <div class="flex-1 flex">
+                <!-- Sidebar -->
+                <div id="chat-sidebar" class="hidden md:block w-80 border-r" style="border-color: var(--border-color); background-color: var(--bg-secondary);">
+                    <div class="p-4 border-b" style="border-color: var(--border-color);">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div id="user-avatar" class="avatar-circle" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;"></div>
+                            <div>
+                                <p id="user-display-name" class="font-semibold">User</p>
+                                <p class="text-xs text-gray-500 flex items-center gap-1">
+                                    <span class="online-indicator"></span>
+                                    <span>Online</span>
+                                </p>
+                            </div>
+                        </div>
+                        <input type="text" id="search-chats" placeholder="Search..." 
+                               class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                               style="border-color: var(--border-color); background-color: var(--bg-tertiary);">
+                    </div>
+                    <div class="p-2">
+                        <div class="text-xs font-semibold text-gray-500 mb-2 px-2">ONLINE USERS</div>
+                        <div id="online-users" class="space-y-1"></div>
+                    </div>
+                </div>
+
+                <!-- Main Chat -->
+                <div class="flex-1 flex flex-col">
+                    <!-- Messages Container -->
+                    <div id="messages-container" class="flex-1 overflow-auto chat-scroll p-4 space-y-3"></div>
+
+                    <!-- Typing Indicator -->
+                    <div id="typing-indicator" class="hidden px-4 py-2 text-sm italic text-gray-500">
+                        <span id="typing-text">Someone is typing...</span>
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="p-4 border-t" style="border-color: var(--border-color); background-color: var(--bg-secondary);">
+                        <div id="emoji-picker" class="hidden mb-3 border rounded-lg" style="border-color: var(--border-color);">
+                            <div class="emoji-picker-grid" id="emoji-grid"></div>
+                        </div>
+                        <form id="message-form" class="flex gap-2">
+                            <button type="button" id="emoji-toggle" class="px-3 py-2 rounded-lg hover:scale-110 transition-all"
+                                    style="background-color: var(--accent-secondary); color: white;">😊</button>
+                            <input type="text" id="message-input" placeholder="Type a message..." 
+                                   class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                   style="border-color: var(--border-color); background-color: var(--bg-tertiary);">
+                            <button type="submit" class="px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105"
+                                    style="background-color: var(--accent-primary); color: white;">Send</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ========== FIREBASE CONFIGURATION ==========
+        // ===== FIREBASE CONFIGURATION =====
+        // YEH VALUES APNE FIREBASE CONSOLE SE LEKAR AAYEN
         const firebaseConfig = {
-            apiKey: "AIzaSyC3z-0TFNvgAwGIxis--XAzPXjP30DeCe8",
+            apiKey: "AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
             authDomain: "maryum-f169b.firebaseapp.com",
             databaseURL: "https://maryum-f169b-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "maryum-f169b",
-            storageBucket: "maryum-f169b.firebasestorage.app",
-            messagingSenderId: "120896430100",
-            appId: "1:120896430100:web:b4d139d1c2279721f2c701"
+            storageBucket: "maryum-f169b.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef1234567890"
         };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const database = firebase.database();
+        console.log("✅ Firebase connected!");
 
-        // ========== STATE MANAGEMENT ==========
+        // ===== STATE MANAGEMENT =====
         let currentUser = null;
-        let typingTimeout = null;
-        let isRegistering = false;
-        let isDarkMode = false;
+        let currentUserId = null;
         let onlineUsers = {};
+        let typingUsers = {};
+        let isDarkMode = false;
 
-        // ========== DOM ELEMENTS ==========
+        // Emoji list
+        const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃'];
+
+        // ===== DOM ELEMENTS =====
         const loginScreen = document.getElementById('login-screen');
         const chatScreen = document.getElementById('chat-screen');
-        const messagesContainer = document.getElementById('messages-container');
+        const loginForm = document.getElementById('login-form');
+        const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
-        const typingIndicator = document.getElementById('typing-indicator');
-        const typingText = document.getElementById('typing-text');
-        const onlineStatus = document.getElementById('online-status');
-        const userCount = document.getElementById('user-count');
+        const messagesContainer = document.getElementById('messages-container');
+        const logoutButton = document.getElementById('logout-button');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const emojiToggle = document.getElementById('emoji-toggle');
         const emojiPicker = document.getElementById('emoji-picker');
         const emojiGrid = document.getElementById('emoji-grid');
+        const onlineUsersList = document.getElementById('online-users');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const typingText = document.getElementById('typing-text');
+        const onlineCount = document.getElementById('online-count');
 
-        // ========== EMOJI LIST ==========
-        const emojis = ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','☺️','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','😵','🤯','🥳','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','👍','👎','👋','🤚','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦿','🦵','🦶','👂','🦻','👃','🧠','🫀','🫁','🦷','🦴','👀','👁️','👅','👄','💋'];
-
-        // ========== INITIALIZATION ==========
-        function init() {
-            initEmojiPicker();
-            loadDarkMode();
-            setupAuthListener();
+        // ===== UTILITY FUNCTIONS =====
+        function generateAvatar(name) {
+            const colors = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+            ];
+            const initial = name ? name.charAt(0).toUpperCase() : '?';
+            const colorIndex = name ? name.charCodeAt(0) % colors.length : 0;
+            return { initial, background: colors[colorIndex] };
         }
 
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ===== EMOJI PICKER =====
         function initEmojiPicker() {
             emojis.forEach(emoji => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'emoji-btn';
                 btn.textContent = emoji;
-                btn.onclick = () => {
+                btn.addEventListener('click', () => {
                     messageInput.value += emoji;
                     messageInput.focus();
                     emojiPicker.classList.add('hidden');
-                };
+                });
                 emojiGrid.appendChild(btn);
             });
         }
 
-        // ========== AUTHENTICATION ==========
-        function toggleAuthForm() {
-            isRegistering = !isRegistering;
-            const authButton = document.getElementById('auth-button');
-            const switchAuth = document.getElementById('switch-auth');
-            const registerFields = document.getElementById('register-fields');
-            const loginFields = document.getElementById('login-fields');
-            const resetPassword = document.getElementById('reset-password');
+        emojiToggle.addEventListener('click', () => {
+            emojiPicker.classList.toggle('hidden');
+        });
 
-            if (isRegistering) {
-                authButton.textContent = 'Create Account';
-                authButton.onclick = register;
-                switchAuth.textContent = 'Sign in instead';
-                registerFields.classList.remove('hidden');
-                resetPassword.classList.add('hidden');
-            } else {
-                authButton.textContent = 'Sign In';
-                authButton.onclick = login;
-                switchAuth.textContent = 'Create an account';
-                registerFields.classList.add('hidden');
-                resetPassword.classList.remove('hidden');
+        // Close emoji picker when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!emojiToggle.contains(e.target) && !emojiPicker.contains(e.target)) {
+                emojiPicker.classList.add('hidden');
             }
+        });
+
+        // ===== THEME TOGGLE =====
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            themeIcon.textContent = isDarkMode ? '☀️' : '🌙';
+            
+            // Save theme preference
+            localStorage.setItem('chat-theme', isDarkMode ? 'dark' : 'light');
+        });
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('chat-theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeIcon.textContent = '☀️';
+            isDarkMode = true;
         }
 
-        async function login() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            if (!email || !password) {
-                showError('Please enter both email and password');
-                return;
-            }
-
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-
-        async function register() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+        // ===== FIREBASE AUTHENTICATION =====
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             const username = document.getElementById('username').value.trim();
-
-            if (!email || !password || !username) {
-                showError('Please fill in all fields');
-                return;
-            }
-
-            if (password.length < 6) {
-                showError('Password must be at least 6 characters');
-                return;
-            }
-
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                await database.ref('users/' + userCredential.user.uid).set({
-                    username: username,
-                    email: email,
-                    createdAt: firebase.database.ServerValue.TIMESTAMP
-                });
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-
-        async function resetPassword() {
-            const email = document.getElementById('email').value.trim();
             
-            if (!email) {
-                showError('Please enter your email address');
+            if (!username) {
+                alert('Please enter a username');
                 return;
             }
-
-            try {
-                await auth.sendPasswordResetEmail(email);
-                showMessage('Password reset email sent! Check your inbox.', 'success');
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-
-        async function logout() {
-            if (currentUser) {
-                await database.ref('online/' + currentUser.uid).remove();
-                await database.ref('typing/' + currentUser.uid).remove();
-            }
-            await auth.signOut();
-        }
-
-        function setupAuthListener() {
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    currentUser = user;
-                    showChat();
-                    setupUserPresence();
-                    loadMessages();
-                    setupTypingListener();
-                    loadUserProfile();
-                } else {
-                    currentUser = null;
-                    showLogin();
-                }
+            
+            currentUser = username;
+            currentUserId = Date.now().toString(); // Generate unique ID
+            
+            // Save user to Firebase
+            await database.ref('users/' + currentUserId).set({
+                username: username,
+                online: true,
+                lastSeen: Date.now()
             });
-        }
-
-        async function loadUserProfile() {
-            if (!currentUser) return;
             
-            const userRef = database.ref('users/' + currentUser.uid);
-            userRef.on('value', (snapshot) => {
-                const userData = snapshot.val();
-                if (userData) {
-                    document.getElementById('app-title-header').textContent = `ChatConnect • ${userData.username}`;
-                }
+            // Set online status
+            const onlineRef = database.ref('online/' + currentUserId);
+            onlineRef.set({
+                username: username,
+                timestamp: Date.now()
             });
-        }
-
-        // ========== CHAT FUNCTIONS ==========
-        function setupUserPresence() {
-            if (!currentUser) return;
-
-            const userStatusRef = database.ref('online/' + currentUser.uid);
             
-            // Get username first
-            database.ref('users/' + currentUser.uid + '/username').once('value')
-                .then((snapshot) => {
-                    const username = snapshot.val() || 'User';
-                    
-                    userStatusRef.set({
-                        username: username,
-                        uid: currentUser.uid,
-                        lastSeen: firebase.database.ServerValue.TIMESTAMP,
-                        online: true
-                    });
-
-                    userStatusRef.onDisconnect().remove();
-
-                    // Listen for online users
-                    database.ref('online').on('value', (snapshot) => {
-                        const users = snapshot.val() || {};
-                        onlineUsers = users;
-                        const onlineCount = Object.keys(users).length;
-                        
-                        userCount.textContent = `• ${onlineCount} online`;
-                        updateTypingIndicator();
-                    });
-                });
-        }
-
-        function sendMessage() {
-            const message = messageInput.value.trim();
+            // Set up disconnect handler
+            onlineRef.onDisconnect().remove();
             
-            if (!message || !currentUser) return;
+            // Update UI
+            const avatar = generateAvatar(username);
+            document.getElementById('user-display-name').textContent = username;
+            document.getElementById('user-avatar').textContent = avatar.initial;
+            document.getElementById('user-avatar').style.background = avatar.background;
+            
+            // Show chat screen
+            loginScreen.classList.add('hidden');
+            chatScreen.classList.remove('hidden');
+            
+            // Load messages and setup listeners
+            loadMessages();
+            setupOnlineUsersListener();
+            setupTypingListener();
+            
+            // Show welcome message
+            addSystemMessage(`Welcome ${username}! Start chatting with others.`);
+        });
 
-            // Clear typing status
-            if (currentUser) {
-                database.ref('typing/' + currentUser.uid).remove();
+        // ===== LOGOUT =====
+        logoutButton.addEventListener('click', () => {
+            if (currentUserId) {
+                // Remove online status
+                database.ref('online/' + currentUserId).remove();
+                database.ref('users/' + currentUserId + '/online').set(false);
             }
+            
+            // Reset state
+            currentUser = null;
+            currentUserId = null;
+            
+            // Show login screen
+            chatScreen.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            document.getElementById('username').value = '';
+            
+            // Clear messages
+            messagesContainer.innerHTML = '';
+        });
 
-            // Get username
-            database.ref('users/' + currentUser.uid + '/username').once('value')
-                .then((snapshot) => {
-                    const username = snapshot.val() || 'You';
-                    
-                    return database.ref('messages').push().set({
-                        text: message,
-                        senderId: currentUser.uid,
-                        senderName: username,
-                        timestamp: firebase.database.ServerValue.TIMESTAMP,
-                        seen: false
-                    });
-                })
-                .then(() => {
-                    messageInput.value = '';
-                    messageInput.focus();
-                })
-                .catch((error) => {
-                    console.error('Error sending message:', error);
-                });
-        }
-
+        // ===== MESSAGING =====
         function loadMessages() {
-            const messagesRef = database.ref('messages').limitToLast(50);
-            
-            messagesRef.on('child_added', (snapshot) => {
-                const message = snapshot.val();
-                displayMessage(message, snapshot.key);
+            database.ref('messages').limitToLast(50).on('value', (snapshot) => {
+                messagesContainer.innerHTML = '';
+                const messages = snapshot.val();
                 
-                // Mark as seen if not your message
-                if (message.senderId !== currentUser.uid && !message.seen) {
-                    database.ref('messages/' + snapshot.key + '/seen').set(true);
+                if (messages) {
+                    Object.entries(messages).forEach(([key, message]) => {
+                        displayMessage(message, key);
+                    });
+                    
+                    // Scroll to bottom
+                    setTimeout(() => {
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }, 100);
+                } else {
+                    addSystemMessage('No messages yet. Start the conversation!');
                 }
             });
         }
 
         function displayMessage(message, messageId) {
-            if (document.getElementById(messageId)) return;
-
-            const isCurrentUser = message.senderId === currentUser.uid;
+            const isOwn = message.senderId === currentUserId;
+            const avatar = generateAvatar(message.senderName);
+            
             const messageDiv = document.createElement('div');
-            messageDiv.id = messageId;
-            messageDiv.className = `message-animation flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
-
-            const bubble = document.createElement('div');
-            bubble.className = `message-bubble ${isCurrentUser ? 'user' : 'other'}`;
-
-            // Sender name (only for other users)
-            if (!isCurrentUser) {
-                const senderName = document.createElement('div');
-                senderName.className = 'message-sender';
-                senderName.textContent = message.senderName;
-                bubble.appendChild(senderName);
-            }
-
-            // Message text
-            const messageText = document.createElement('div');
-            messageText.className = 'text-sm break-words';
-            messageText.textContent = message.text;
-            bubble.appendChild(messageText);
-
-            // Timestamp
-            const time = document.createElement('div');
-            time.className = 'message-time';
-            const date = new Date(message.timestamp);
-            time.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            messageDiv.className = `message-animation flex gap-3 ${isOwn ? 'justify-end' : 'justify-start'}`;
             
-            // Seen status for user's messages
-            if (isCurrentUser && message.seen) {
-                const seenIcon = document.createElement('span');
-                seenIcon.className = 'ml-1';
-                seenIcon.textContent = '✓✓';
-                time.appendChild(seenIcon);
+            if (!isOwn) {
+                messageDiv.innerHTML = `
+                    <div class="avatar-circle flex-shrink-0" style="background: ${avatar.background}; color: white;">
+                        ${avatar.initial}
+                    </div>
+                    <div class="max-w-[70%]">
+                        <div class="text-xs font-semibold mb-1">${message.senderName}</div>
+                        <div class="bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none px-4 py-2">
+                            <div class="text-sm">${message.text}</div>
+                            <div class="text-xs text-gray-500 text-right mt-1">${formatTime(message.timestamp)}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="max-w-[70%]">
+                        <div class="bg-blue-500 text-white rounded-2xl rounded-tr-none px-4 py-2">
+                            <div class="text-sm">${message.text}</div>
+                            <div class="text-xs text-blue-100 text-right mt-1">${formatTime(message.timestamp)}</div>
+                        </div>
+                    </div>
+                    <div class="avatar-circle flex-shrink-0" style="background: ${avatar.background}; color: white;">
+                        ${avatar.initial}
+                    </div>
+                `;
             }
             
-            bubble.appendChild(time);
-            messageDiv.appendChild(bubble);
-
-            // Clear welcome message
-            const welcomeMsg = messagesContainer.querySelector('.text-center');
-            if (welcomeMsg) {
-                welcomeMsg.remove();
-            }
-
             messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // ========== TYPING INDICATOR ==========
-        function handleTyping() {
-            if (!currentUser) return;
+        function addSystemMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'text-center py-4';
+            messageDiv.innerHTML = `
+                <div class="inline-block bg-gray-100 text-gray-600 rounded-lg px-4 py-2 text-sm">
+                    ${text}
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+        }
+
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
             
-            const typingRef = database.ref('typing/' + currentUser.uid);
-            typingRef.set({
-                uid: currentUser.uid,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+            if (!text || !currentUser || !currentUserId) return;
+            
+            const messageData = {
+                text: text,
+                senderId: currentUserId,
+                senderName: currentUser,
+                timestamp: Date.now()
+            };
+            
+            // Save to Firebase
+            await database.ref('messages').push(messageData);
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Stop typing
+            database.ref('typing/' + currentUserId).remove();
+        });
+
+        // ===== TYPING INDICATOR =====
+        let typingTimeout;
+        
+        messageInput.addEventListener('input', () => {
+            if (!currentUserId) return;
+            
+            // Set typing status
+            database.ref('typing/' + currentUserId).set({
+                username: currentUser,
+                timestamp: Date.now()
             });
             
+            // Clear previous timeout
             clearTimeout(typingTimeout);
+            
+            // Remove typing status after 2 seconds
             typingTimeout = setTimeout(() => {
-                typingRef.remove();
+                database.ref('typing/' + currentUserId).remove();
             }, 2000);
-        }
+        });
 
         function setupTypingListener() {
-            database.ref('typing').on('child_added', (snapshot) => {
-                if (snapshot.key !== currentUser.uid) {
-                    const typingData = snapshot.val();
-                    const user = onlineUsers[snapshot.key];
-                    
-                    if (user) {
-                        typingText.textContent = `${user.username} is typing...`;
-                        typingIndicator.classList.remove('hidden');
-                    }
-                }
-            });
-            
-            database.ref('typing').on('child_removed', () => {
-                typingIndicator.classList.add('hidden');
-            });
-        }
-
-        function updateTypingIndicator() {
-            // Check if any user is typing
-            let typingUser = null;
-            database.ref('typing').once('value').then((snapshot) => {
-                const typingUsers = snapshot.val() || {};
+            database.ref('typing').on('value', (snapshot) => {
+                const typingData = snapshot.val();
+                typingUsers = typingData || {};
                 
-                for (const [uid, data] of Object.entries(typingUsers)) {
-                    if (uid !== currentUser.uid && onlineUsers[uid]) {
-                        typingUser = onlineUsers[uid];
-                        break;
-                    }
+                // Remove current user from list
+                if (currentUserId) {
+                    delete typingUsers[currentUserId];
                 }
                 
-                if (typingUser) {
-                    typingText.textContent = `${typingUser.username} is typing...`;
+                const typingUsernames = Object.values(typingUsers).map(user => user.username);
+                
+                if (typingUsernames.length > 0) {
+                    const text = typingUsernames.length === 1 
+                        ? `${typingUsernames[0]} is typing...`
+                        : `${typingUsernames.join(', ')} are typing...`;
+                    typingText.textContent = text;
                     typingIndicator.classList.remove('hidden');
                 } else {
                     typingIndicator.classList.add('hidden');
@@ -685,99 +599,64 @@
             });
         }
 
-        // ========== UI FUNCTIONS ==========
-        function showLogin() {
-            loginScreen.classList.remove('hidden');
-            chatScreen.classList.add('hidden');
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
-            document.getElementById('username').value = '';
+        // ===== ONLINE USERS =====
+        function setupOnlineUsersListener() {
+            database.ref('online').on('value', (snapshot) => {
+                const onlineData = snapshot.val();
+                onlineUsers = onlineData || {};
+                
+                // Remove current user from list
+                if (currentUserId) {
+                    delete onlineUsers[currentUserId];
+                }
+                
+                // Update count
+                const onlineCountValue = Object.keys(onlineUsers).length;
+                onlineCount.textContent = `${onlineCountValue} online`;
+                
+                // Update list
+                onlineUsersList.innerHTML = '';
+                Object.entries(onlineUsers).forEach(([userId, userData]) => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer';
+                    userDiv.style.backgroundColor = 'var(--bg-tertiary)';
+                    
+                    const avatar = generateAvatar(userData.username);
+                    userDiv.innerHTML = `
+                        <div class="relative">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm" style="background: ${avatar.background}; color: white;">
+                                ${avatar.initial}
+                            </div>
+                            <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-medium">${userData.username}</div>
+                        </div>
+                    `;
+                    
+                    onlineUsersList.appendChild(userDiv);
+                });
+                
+                // If no other users online
+                if (onlineCountValue === 0) {
+                    onlineUsersList.innerHTML = `
+                        <div class="text-center py-4 text-gray-500 text-sm">
+                            No other users online
+                        </div>
+                    `;
+                }
+            });
         }
 
-        function showChat() {
-            loginScreen.classList.add('hidden');
-            chatScreen.classList.remove('hidden');
-            messageInput.focus();
-            
-            // Add welcome message
-            addSystemMessage('Welcome to ChatConnect! Start messaging with friends.');
-        }
-
-        function addSystemMessage(text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message-animation flex justify-center';
-            
-            const bubble = document.createElement('div');
-            bubble.className = 'message-bubble system';
-            bubble.textContent = text;
-            
-            messageDiv.appendChild(bubble);
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        function toggleEmojiPicker() {
-            emojiPicker.classList.toggle('hidden');
-        }
-
-        function toggleDarkMode() {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('dark-mode');
-            document.getElementById('theme-icon').textContent = isDarkMode ? '☀️' : '🌙';
-            localStorage.setItem('darkMode', isDarkMode);
-        }
-
-        function loadDarkMode() {
-            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-            if (savedDarkMode) {
-                isDarkMode = true;
-                document.body.classList.add('dark-mode');
-                document.getElementById('theme-icon').textContent = '☀️';
-            }
-        }
-
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg z-50';
-            errorDiv.textContent = message;
-            document.body.appendChild(errorDiv);
-            
-            setTimeout(() => {
-                errorDiv.remove();
-            }, 5000);
-        }
-
-        function showMessage(message, type = 'info') {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 ${
-                type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 
-                'bg-blue-100 border border-blue-400 text-blue-700'
-            }`;
-            messageDiv.textContent = message;
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
-        }
-
-        // Close emoji picker when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!event.target.closest('#emoji-toggle') && !event.target.closest('#emoji-picker')) {
-                emojiPicker.classList.add('hidden');
-            }
+        // ===== MOBILE MENU =====
+        document.getElementById('mobile-menu-toggle').addEventListener('click', () => {
+            document.getElementById('chat-sidebar').classList.toggle('hidden');
         });
 
-        // Enter key to send message
-        messageInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            }
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', () => {
+            initEmojiPicker();
         });
-
-        // Initialize
-        init();
     </script>
 </body>
 </html>
